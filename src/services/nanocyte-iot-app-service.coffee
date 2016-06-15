@@ -1,3 +1,4 @@
+_                      = require 'lodash'
 mongojs                = require 'mongojs'
 Datastore              = require 'meshblu-core-datastore'
 
@@ -10,11 +11,11 @@ IotAppPublisher        = require 'nanocyte-iot-app-publisher'
 redis                  = require 'ioredis'
 
 class NanocyteIotAppService
-  constructor: ({MONGODB_URI, REDIS_URI}) ->
+  constructor: ({MONGODB_URI, REDIS_URI}, {@meshbluConfig, @channelConfig}) ->
     throw new Error 'MONGODB_URI is required' unless MONGODB_URI?
     throw new Error 'REDIS_URI is required' unless REDIS_URI?
 
-    @meshbluConfig             = new MeshbluConfig
+    @meshbluConfig             ?= new MeshbluConfig().toJSON()
     @client                    = redis.createClient REDIS_URI, dropBufferSupport: true
     database                   = mongojs MONGODB_URI
 
@@ -22,9 +23,17 @@ class NanocyteIotAppService
       database: database
       collection: 'iot-apps'
 
-  doHello: ({hasError}, callback) =>
-    return callback @_createError(755, 'Not enough dancing!') if hasError?
-    callback()
+  publish: ({appId, version, meshbluAuth}, callback)=>
+    meshbluHttp = @_createMeshbluHttp meshbluAuth
+    meshbluHttp.generateAndStoreTokenWithOptions appId, {tag: 'nanocyte-flow-deploy-service'}, (error, {token}={}) =>
+      return callback error  if error?
+
+      options         = appId: appId, appToken: token, version: version, meshbluConfig: new MeshbluConfig @meshbluConfig
+      iotAppPublisher = @_createIotAppPublisher options
+      iotAppPublisher.publish (error) =>
+        return callback error  if error?
+        callback()
+
 
   _createError: (code, message) =>
     error = new Error message
@@ -35,16 +44,16 @@ class NanocyteIotAppService
     {appId, appToken} = options
 
     meshbluJSON =
-      _.extend new MeshbluConfig().toJSON(), {uuid:  appId, token: appToken}
+      _.extend {}, @meshbluConfig, {uuid:  appId, token: appToken}
 
     configurationSaver     = new ConfigurationSaver {@client, @datastore}
-    configurationGenerator = new ConfigurationGenerator {meshbluJSON}
+    configurationGenerator = new ConfigurationGenerator {meshbluJSON}, {@channelConfig}
 
     new IotAppPublisher options, {configurationSaver, configurationGenerator}
 
 
   _createMeshbluHttp: (options) =>
-    meshbluJSON = _.assign {}, @meshbluConfig.toJSON(), options
+    meshbluJSON = _.assign {}, @meshbluConfig, options
     new MeshbluHttp meshbluJSON
 
 module.exports = NanocyteIotAppService
