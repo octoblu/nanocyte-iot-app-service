@@ -7,6 +7,8 @@ class Command
     @serverOptions =
       port:           process.env.PORT || 80
       disableLogging: process.env.DISABLE_LOGGING == "true"
+      MONGODB_URI:    process.env.MONGODB_URI
+      REDIS_URI:      process.env.REDIS_URI
 
   panic: (error) =>
     console.error error.stack

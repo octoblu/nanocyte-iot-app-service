@@ -1,10 +1,12 @@
-class NanocyteIotAppController
-  constructor: ({@nanocyteIotAppService}) ->
+debug                  = require('debug')('nanocyte-flow-deploy-service:iot-app-controller')
 
-  hello: (request, response) =>
-    {hasError} = request.query
-    @nanocyteIotAppService.doHello {hasError}, (error) =>
-      return response.status(error.code || 500).send(error: error.message) if error?
-      response.sendStatus(200)
+class IotAppController
+  constructor: (dependencies={}) ->
 
-module.exports = NanocyteIotAppController
+  publish: (req, res) =>
+    res.send(201)
+
+  sync: (req, res) =>
+
+
+module.exports = IotAppController

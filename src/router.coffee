@@ -5,7 +5,7 @@ class Router
   route: (app) =>
     nanocyteIotAppController = new NanocyteIotAppController {@nanocyteIotAppService}
 
-    app.post '/bluprint/:appId/:version',      iotAppController.publish
-    app.post '/bluprint/:appId/:version/link', iotAppController.link
+    app.post '/bluprint/:appId/:version',      nanocyteIotAppController.publish
+    app.post '/bluprint/:appId/:version/sync', nanocyteIotAppController.sync
 
 module.exports = Router
