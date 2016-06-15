@@ -30,9 +30,7 @@ class NanocyteIotAppService
 
       options         = appId: appId, appToken: token, version: version, meshbluConfig: new MeshbluConfig @meshbluConfig
       iotAppPublisher = @_createIotAppPublisher options
-      iotAppPublisher.publish (error) =>
-        return callback error  if error?
-        meshbluHttp.register {}, callback
+      iotAppPublisher.publish callback
 
   _createError: (code, message) =>
     error = new Error message
@@ -49,7 +47,6 @@ class NanocyteIotAppService
     configurationGenerator = new ConfigurationGenerator {meshbluJSON}, {@channelConfig}
 
     new IotAppPublisher options, {configurationSaver, configurationGenerator}
-
 
   _createMeshbluHttp: (options) =>
     meshbluJSON = _.assign {}, @meshbluConfig, options

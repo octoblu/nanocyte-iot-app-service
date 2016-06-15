@@ -60,19 +60,13 @@ describe 'Publish', ->
         .post '/search/devices'
         .send {uuid: 'the-app-id'}
         .set 'Authorization', "Basic #{@flowAuth}"
-        .reply 200, [{uuid: 'the-app-id', flow: { nodes: [], links: [] } }]
+        .reply 200, [{uuid: 'the-app-id', name: 'the-flow', flow: { nodes: [], links: [] } }]
 
     beforeEach 'update message schema', ->
       @meshblu
         .put '/v2/devices/the-app-id'
         .set 'Authorization', "Basic #{@flowAuth}"
         .reply 204
-
-    beforeEach 'create bluprint device', ->
-      @meshblu
-        .post '/devices'
-        .set 'Authorization', "Basic #{@userAuth}"
-        .reply 201, uuid: 'the-bluprint-device'
 
     afterEach (done) ->
       @client.del 'bluprint/the-app-id', done
@@ -98,6 +92,3 @@ describe 'Publish', ->
 
     it 'should return a 201', ->
       expect(@response.statusCode).to.equal 201
-
-    it 'should create the bluprint device', ->
-      expect(@body.uuid).to.equal 'the-bluprint-device'
