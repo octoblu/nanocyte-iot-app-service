@@ -7,9 +7,9 @@ class IotAppController
     {meshbluAuth} = req
     {appId, version} = req.params
 
-    @nanocyteIotAppService.publish {appId, version, meshbluAuth}, (error) =>
+    @nanocyteIotAppService.publish {appId, version, meshbluAuth}, (error, bluprintDevice) =>
       return res.sendError(error) if error?
-      res.send(201)
+      res.status(201).send(bluprintDevice)
 
   sync: (req, res) =>
 

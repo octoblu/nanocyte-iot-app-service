@@ -32,8 +32,7 @@ class NanocyteIotAppService
       iotAppPublisher = @_createIotAppPublisher options
       iotAppPublisher.publish (error) =>
         return callback error  if error?
-        callback()
-
+        meshbluHttp.register {}, callback
 
   _createError: (code, message) =>
     error = new Error message

@@ -48,24 +48,34 @@ describe 'Publish', ->
 
 
   describe 'On POST /bluprint/:appId/:version', ->
-    beforeEach ->
-      @generateToken = @meshblu
+
+    beforeEach 'generate token', ->
+      @meshblu
         .post '/devices/the-app-id/tokens'
         .set 'Authorization', "Basic #{@userAuth}"
         .reply 201, {token: 'alpha-bet'}
 
-    beforeEach ->
-      @searchDevices = @meshblu
+    beforeEach 'search devices', ->
+      @meshblu
         .post '/search/devices'
         .send {uuid: 'the-app-id'}
         .set 'Authorization', "Basic #{@flowAuth}"
         .reply 200, [{uuid: 'the-app-id', flow: { nodes: [], links: [] } }]
 
-    beforeEach ->
-      @searchDevices = @meshblu
+    beforeEach 'update message schema', ->
+      @meshblu
         .put '/v2/devices/the-app-id'
         .set 'Authorization', "Basic #{@flowAuth}"
         .reply 204
+
+    beforeEach 'create bluprint device', ->
+      @meshblu
+        .post '/devices'
+        .set 'Authorization', "Basic #{@userAuth}"
+        .reply 201, uuid: 'the-bluprint-device'
+
+    afterEach (done) ->
+      @client.del 'bluprint/the-app-id', done
 
     beforeEach (done) ->
       options =
@@ -76,8 +86,7 @@ describe 'Publish', ->
           password: 'some-token'
         json: true
 
-      request.post options, (error, @response, @body) =>
-        done error
+      request.post options, (error, @response, @body) => done error
 
     it 'should authenticate with meshblu', ->
       @authDevice.done()
@@ -89,3 +98,6 @@ describe 'Publish', ->
 
     it 'should return a 201', ->
       expect(@response.statusCode).to.equal 201
+
+    it 'should create the bluprint device', ->
+      expect(@body.uuid).to.equal 'the-bluprint-device'
